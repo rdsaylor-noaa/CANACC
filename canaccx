@@ -1,0 +1,60 @@
+#!/bin/bash
+#
+# canaccx - bash script to run a single CANACC simulation
+# USAGE: $ ./canaccx SIMNAME
+#  where, SIMNAME is the name of the simulation which must have a CTRL file
+#         located in the "./ctrl" directory with the name "canaccCTRL_SIMNAME.dat"
+#=====================================================================================!
+#                                                                                     !
+#     Program:      CANACC                                                            !
+#                   Canopy physics model for ACCESS                                   !
+#                                                                                     !
+#     Version:      1.0.0                                                             !
+#                                                                                     !
+#     Initiated:    March 2017                                                        !
+#     Last Update:  March 2017                                                        !
+#                                                                                     !
+#     Contact:      Rick D. Saylor, PhD                                               !
+#                   Physical Scientist                                                !
+#                   U. S. Department of Commerce                                      !
+#                   National Oceanic and Atmospheric Administration                   !
+#                   Air Resources Laboratory                                          !
+#                   Atmospheric Turbulence and Diffusion Division                     !
+#                   456 S. Illinois Ave                                               !
+#                   Oak Ridge, TN 37830                                               !
+#                   email: Rick.Saylor@noaa.gov                                       !
+#                   Phone: (865) 576-0116   FAX: (865) 576-1327                       !
+#                                                                                     !
+#=====================================================================================!
+#                                                                                     !
+#=====================================================================================!
+#
+# check for ONLY 1 argument
+if [ $# -ne 1 ]; then
+  echo number of arguments passed: $#
+  echo Usage: canaccx SIMNAME
+  exit 1
+fi 
+
+# get CTRL filename passed as argument
+CTRLFILEIN=./ctrl/canaccCTRL_$1.dat
+CTRLFILEX=./ctrl/canaccCTRL.dat
+
+# if given file exists, then copy to canaccCTRL.dat
+if [ -e $CTRLFILEIN ]; then
+  cp $CTRLFILEIN $CTRLFILEX
+else
+# otherwise complain and exit
+  echo File $CTRLFILEIN does not exist!
+  exit 1
+fi
+
+# run CANACC
+if [ -e ./bin/canacc ]; then
+  exec ./bin/canacc
+else
+  echo canacc executable not found!
+  exit 1
+fi
+
+exit 0
