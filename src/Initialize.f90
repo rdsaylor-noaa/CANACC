@@ -112,6 +112,7 @@ subroutine InitializeModel()
   allocate(ppfdout(npts,0:ntout-1))
   allocate(cairout(npts,0:ntout-1))
   allocate(h2oout(npts,0:ntout-1))
+  allocate(rhout(npts,0:ntout-1))
 
   allocate(ppfddirout(0:ntout-1))
   allocate(ppfddifout(0:ntout-1))
@@ -162,6 +163,7 @@ subroutine InitializeModel()
   ppfdout=0.0_dp
   cairout=0.0_dp
   h2oout=0.0_dp
+  rhout=0.0_dp
   ppfdsunout=0.0_dp
   ppfdshdout=0.0_dp
   nirsunout=0.0_dp

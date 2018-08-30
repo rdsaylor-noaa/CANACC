@@ -96,6 +96,7 @@ subroutine CleanUp()
   deallocate(ppfdout)
   deallocate(cairout)
   deallocate(h2oout)
+  deallocate(rhout)
 
   deallocate(ppfddirout)
   deallocate(ppfddifout)
