@@ -444,6 +444,7 @@ subroutine GetSoilData()
   sattheta = xsattheta(isoiltype)
   rtheta   = xrtheta(isoiltype)
   sbcoef   = xsbcoef(isoiltype)
+  satphi   = xsatphi(isoiltype)
 
   return
 end subroutine GetSoilData
