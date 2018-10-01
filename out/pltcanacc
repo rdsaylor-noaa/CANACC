@@ -369,12 +369,14 @@ class PltSoil(wx.Panel):
         self.rbxtype4 = wx.RadioButton(self, -1, 'rbg')
         self.rbxtype5 = wx.RadioButton(self, -1, 'rsoil')
         self.rbxtype6 = wx.RadioButton(self, -1, 'gbg')
+        self.rbxtype7 = wx.RadioButton(self, -1, 'temps')
         hbox3.Add(self.rbxtype1, proportion=1)
         hbox3.Add(self.rbxtype2, proportion=1)
         hbox3.Add(self.rbxtype3, proportion=1)
         hbox3.Add(self.rbxtype4, proportion=1)
         hbox3.Add(self.rbxtype5, proportion=1)
         hbox3.Add(self.rbxtype6, proportion=1)
+        hbox3.Add(self.rbxtype7, proportion=1)
         vbox.Add(hbox3,flag=wx.EXPAND|wx.LEFT|wx.RIGHT, border=10)
         self.rbxtype1.SetValue(True)
 
@@ -466,6 +468,14 @@ class PltSoil(wx.Panel):
            outfn = "gbg"
            tseries.plottsm(simname, "soil", varnames, varlabels, "mol m$^{-2}$ s$^{-1}$", 
                "Ground Aerodynamic Conductance", "marker", scolors, outtype, outfn)
+        elif (self.rbxtype7.GetValue() == True):
+           varnames = ["tsoilk", "tk0"]
+           varlabels = ["T$_{soil}$", "T$_0$"]
+           scolors = ["peru", "darkgray"]
+           outfn = "temps"
+           tseries.plottsm(simname, "soil", varnames, varlabels, "K", 
+               "Soil and Air BC Temperatures", "marker", scolors, outtype, outfn)
+
 
     def OnClickExit(self,event):
         frame.Destroy()

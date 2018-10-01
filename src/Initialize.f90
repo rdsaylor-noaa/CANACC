@@ -153,6 +153,8 @@ subroutine InitializeModel()
   allocate(rbgout(0:ntout-1))
   allocate(gbgout(0:ntout-1))
   allocate(rsoilout(0:ntout-1))
+  allocate(tsoilkout(0:ntout-1))
+  allocate(tk0out(0:ntout-1))
 
   allocate(timeout(0:ntout-1))
   allocate(sdtout(0:ntout-1))

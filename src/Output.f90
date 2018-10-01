@@ -214,6 +214,8 @@ subroutine SaveResults()
   rbgout(nt) = rbg
   gbgout(nt) = gbg
   rsoilout(nt) = rsoil
+  tsoilkout(nt) = tsoilk
+  tk0out(nt) = tk0
 
   timeout(nt)=(t-tstart)/3600.0_dp     ! convert from seconds to hrs
 
@@ -421,7 +423,25 @@ subroutine PrintFinaltoFile()
   end do
   close(UOUT)
 
+  ! output tsoilk over simulation
+  ofname='./out/' // trim(simname) // '/soil/tsoilk.dat'
+  open(UOUT,file=ofname)
+  hdr = ' hr         tsoilk(K)'
+  write(UOUT,1000) trim(hdr)
+  do m=0,ntout-1
+    write(UOUT,1001) timeout(m), tsoilkout(m)
+  end do
+  close(UOUT)
 
+  ! output tk0 over simulation
+  ofname='./out/' // trim(simname) // '/soil/tk0.dat'
+  open(UOUT,file=ofname)
+  hdr = ' hr         tk0(K)'
+  write(UOUT,1000) trim(hdr)
+  do m=0,ntout-1
+    write(UOUT,1001) timeout(m), tk0out(m)
+  end do
+  close(UOUT)
 
   ! output ppfd_sun profiles over simulation
   ofname='./out/' // trim(simname) // '/canopy/ppfdsun.dat'

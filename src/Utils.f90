@@ -137,6 +137,8 @@ subroutine CleanUp()
   deallocate(gbgout)
   deallocate(rsoilout)
   deallocate(qsoilout)
+  deallocate(tsoilkout)
+  deallocate(tk0out)
 
   deallocate(timeout)
   deallocate(sdtout)

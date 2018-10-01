@@ -151,7 +151,10 @@ module GlobalData
   ! ksoil - thermal conductivity of soil (W/m-K)
   real(kind=dp)                    :: ksoil
   ! tsoilk - soil/litter temperature (K)
-  real(kind=dp)                  :: tsoilk
+  real(kind=dp)                    :: tsoilk
+  ! tk0 - lower boundary condition for air temperature
+  !        derived from the surface energy balance (K)
+  real(kind=dp)                    :: tk0
   ! dtdzsoil - temperature gradient in soil surface (K/m)
   real(kind=dp)                    :: dtdzsoil
   ! gbg - ground boundary layer conductance (mol/m2-s)
@@ -196,6 +199,10 @@ module GlobalData
   real(kind=dp), allocatable     :: gbgout(:)
   ! rsoilout - resistance to diffusion through soil pore space (s/cm)
   real(kind=dp), allocatable     :: rsoilout(:) 
+  ! tsoilkout - soil temperature over simulation (K)
+  real(kind=dp), allocatable     :: tsoilkout(:)
+  ! tk0out - lower boundary condition for air temperature over simulation (K)
+  real(kind=dp), allocatable     :: tk0out(:)
 
   ! Soil type data
   ! Soil type strings
