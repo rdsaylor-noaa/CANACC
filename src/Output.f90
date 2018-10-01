@@ -207,6 +207,14 @@ subroutine SaveResults()
   nirdirout(nt)  = nir_direct
   nirdifout(nt)  = nir_diffus
 
+  ! soil physics data
+  vsh2oout(nt) = vsh2o
+  qsoilout(nt) = qsoil
+  effrhsoilout(nt) = effrhsoil
+  rbgout(nt) = rbg
+  gbgout(nt) = gbg
+  rsoilout(nt) = rsoil
+
   timeout(nt)=(t-tstart)/3600.0_dp     ! convert from seconds to hrs
 
   return
@@ -352,6 +360,68 @@ subroutine PrintFinaltoFile()
     write(UOUT,1001) timeout(m), ra(m)
   end do
   close(UOUT)
+
+  ! output vsh2o exchange coeffients over simulation
+  ofname='./out/' // trim(simname) // '/soil/vsh2o.dat'
+  open(UOUT,file=ofname)
+  hdr = ' hr         vsh2o(cm/s)'
+  write(UOUT,1000) trim(hdr)
+  do m=0,ntout-1
+    write(UOUT,1001) timeout(m), vsh2oout(m)
+  end do
+  close(UOUT)
+
+  ! output qsoil values over simulation
+  ofname='./out/' // trim(simname) // '/soil/qsoil.dat'
+  open(UOUT,file=ofname)
+  hdr = ' hr         qsoil(mol/cm3)'
+  write(UOUT,1000) trim(hdr)
+  do m=0,ntout-1
+    write(UOUT,1001) timeout(m), qsoilout(m)
+  end do
+  close(UOUT)
+
+  ! output effrhsoil over simulation
+  ofname='./out/' // trim(simname) // '/soil/effrhsoil.dat'
+  open(UOUT,file=ofname)
+  hdr = ' hr         effrhsoil'
+  write(UOUT,1000) trim(hdr)
+  do m=0,ntout-1
+    write(UOUT,1001) timeout(m), effrhsoilout(m)
+  end do
+  close(UOUT)
+
+  ! output rbg over simulation
+  ofname='./out/' // trim(simname) // '/soil/rbg.dat'
+  open(UOUT,file=ofname)
+  hdr = ' hr         rbg(s/cm)'
+  write(UOUT,1000) trim(hdr)
+  do m=0,ntout-1
+    write(UOUT,1001) timeout(m), rbgout(m)
+  end do
+  close(UOUT)
+
+  ! output gbg over simulation
+  ofname='./out/' // trim(simname) // '/soil/gbg.dat'
+  open(UOUT,file=ofname)
+  hdr = ' hr         gbg(mol/m2-s)'
+  write(UOUT,1000) trim(hdr)
+  do m=0,ntout-1
+    write(UOUT,1001) timeout(m), gbgout(m)
+  end do
+  close(UOUT)
+
+  ! output rsoil over simulation
+  ofname='./out/' // trim(simname) // '/soil/rsoil.dat'
+  open(UOUT,file=ofname)
+  hdr = ' hr         rsoil(s/cm)'
+  write(UOUT,1000) trim(hdr)
+  do m=0,ntout-1
+    write(UOUT,1001) timeout(m), rsoilout(m)
+  end do
+  close(UOUT)
+
+
 
   ! output ppfd_sun profiles over simulation
   ofname='./out/' // trim(simname) // '/canopy/ppfdsun.dat'

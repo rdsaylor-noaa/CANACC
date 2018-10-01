@@ -147,6 +147,13 @@ subroutine InitializeModel()
   allocate(anetshdout(npts,0:ntout-1))
   allocate(anetwgtout(npts,0:ntout-1))
 
+  allocate(vsh2oout(0:ntout-1))
+  allocate(qsoilout(0:ntout-1))
+  allocate(effrhsoilout(0:ntout-1))
+  allocate(rbgout(0:ntout-1))
+  allocate(gbgout(0:ntout-1))
+  allocate(rsoilout(0:ntout-1))
+
   allocate(timeout(0:ntout-1))
   allocate(sdtout(0:ntout-1))
 
@@ -184,6 +191,13 @@ subroutine InitializeModel()
   rsshdout=0.0_dp
   anetsunout=0.0_dp
   anetshdout=0.0_dp
+
+  vsh2oout=0.0_dp
+  qsoilout=0.0_dp
+  effrhsoilout=0.0_dp
+  rbgout=0.0_dp
+  gbgout=0.0_dp
+  rsoilout=0.0_dp
 
   ! read z values of vertical grid
   call ReadVerticalGridData()
@@ -333,6 +347,8 @@ subroutine SetSimulationData()
     strmkdir = 'mkdir ./out/' // trim(simname) // '/met'
     call system(strmkdir)
     strmkdir = 'mkdir ./out/' // trim(simname) // '/canopy'
+    call system(strmkdir)
+    strmkdir = 'mkdir ./out/' // trim(simname) // '/soil'
     call system(strmkdir)
   end if
 

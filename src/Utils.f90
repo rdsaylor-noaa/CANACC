@@ -131,6 +131,13 @@ subroutine CleanUp()
   deallocate(anetshdout)
   deallocate(anetwgtout)
 
+  deallocate(vsh2oout)
+  deallocate(effrhsoilout)
+  deallocate(rbgout)
+  deallocate(gbgout)
+  deallocate(rsoilout)
+  deallocate(qsoilout)
+
   deallocate(timeout)
   deallocate(sdtout)
 
@@ -160,7 +167,7 @@ function rtog(rz, pmbi, tki)
   real(kind=dp)              :: rtog              ! conductance, mol/m2-s
   real(kind=dp), parameter   :: rgas=8.205D-05    ! ideal gas constant, m3-atm/K-mol
 
-  rm2smol = rz*(pmbi/1013.)/(rgas*tki)
+  rm2smol = rz*(rgas*tki)/(pmbi/1013.)
   rtog = 1.0/rm2smol
 
   return
@@ -180,7 +187,7 @@ function gtor(gz, pmbi, tki)
   real(kind=dp)              :: gms               ! conductance, m/s
   real(kind=dp), parameter   :: rgas=8.205D-05    ! ideal gas constant, m3-atm/K-mol
 
-  gms = gz*rgas*tki/(pmbi/1013.)
+  gms = gz*(rgas*tki)/(pmbi/1013.)
   gtor = 1.0/gms
 
   return
