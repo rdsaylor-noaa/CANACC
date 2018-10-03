@@ -311,6 +311,7 @@ subroutine CalcSoilExchangeParams()
   real(kind=dp)              :: fsat           ! fractional soil saturation
   real(kind=dp)              :: mdiff          ! molecular diffusivity of water vapor (cm2/s)
   real(kind=dp)              :: phi            ! tmp variable for soil matric potential (suction)
+  integer(kind=i4)           :: rbgselect      ! option for calculation of rbg
 
   ! soil thermal conductivity
   fsat = (stheta-rtheta)/(sattheta-rtheta)
@@ -322,8 +323,12 @@ subroutine CalcSoilExchangeParams()
   qsoil = effrhsoil*qsat(tsoilk)
 
   ! ground boundary layer resistance (s/cm)
-  rbg = SoilRbg(ubar(ncnpy+1))
-! rbg = gtor(gaero(nt), pmb(1), tk(1))*0.01
+  rbgselect = 2 
+  if (rbgselect == 1) then
+    rbg = SoilRbg(ubar(ncnpy+1))                 ! Schuepp (1977)
+  else
+    rbg = gtor(gaero(nt), pmb(1), tk(1))*0.01    ! Bonan (2016)
+  end if
 
   ! Note:  These are the correct units needed in SurfaceAirTemp!
   !        mol/m2-s
