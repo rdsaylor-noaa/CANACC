@@ -598,7 +598,11 @@ module GlobalData
   integer(kind=i4), parameter :: KVRA=1         ! Aerodynamic resistance parameterization
   integer(kind=i4), parameter :: KVSTULL=2      ! Stull-based
   integer(kind=i4), parameter :: KVULKE=3       ! Ulke-based
-
+  !
+  ! WINDSELECT - Canopy wind parameterization selection
+  integer(kind=i4)            :: WINDSELECT
+  integer(kind=i4), parameter :: WINDMEYERS98=1         ! Meyers et al. (1998)-based
+  integer(kind=i4), parameter :: WINDMASSMAN17=2        ! Massman et al. (2017)-based 
   ! Avogadro's number
   real(kind=dp), parameter :: navo=6.02D+023
 
