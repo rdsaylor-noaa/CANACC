@@ -7,9 +7,6 @@
 !                                                                                                                      !
 !======================================================================================================================!
 !                                                                                                                      !
-!     Initiated:    Mar 2017                                                                                           !
-!     Last Update:  July 2018                                                                                          !
-!                                                                                                                      !
 !     Contact:      Rick D. Saylor, PhD                                                                                !
 !                   Physical Scientist                                                                                 !
 !                   U. S. Department of Commerce                                                                       !
@@ -37,8 +34,9 @@ module EnvironData
 
   public ReadEnvironData, AeroConductanceHeat, AeroConductanceMomen, AeroConductanceWater
 
-  private CalcTemp, CalcPressure, CalcMeanWindSpeed, CalcCair, CalcEddyDiffRa, CalcEddyDiffStull, &
-          Psi_m, Psi_h, Psi_w, CalcRiB, rav, MapRiBtoZoL, Phi
+  private CalcTemp, CalcPressure, CalcMeanWindSpeedMeyers98, CalcMeanWindSpeedMassman17, & 
+          CalcCair, CalcEddyDiffRa, CalcEddyDiffStull, Psi_m, Psi_h, Psi_w, CalcRiB, rav, & 
+          MapRiBtoZoL, Phi
 
 contains
 
@@ -65,6 +63,7 @@ contains
     real(kind=dp)             :: ppfdm    ! PPFD at measurement height (umol/m2-s)
     real(kind=dp)             :: sradm    ! shortwave solar radiation at measurement height (W/m2)
     real(kind=dp)             :: ustrms   ! friction velocity (m/s)
+    real(kind=dp)             :: ustrcms   ! friction velocity (cm/s)
     real(kind=dp)             :: lewm2    ! latent heat flux (W/m2)
     real(kind=dp)             :: hwm2     ! sensible heat flux (W/m2)
     real(kind=dp)             :: gwm2     ! soil heat flux (W/m2)
@@ -78,7 +77,10 @@ contains
     data initcall /.TRUE./
     save initcall
 
-    
+    !Hardcoded wind select
+    WINDSELECT=WINDMASSMAN17
+!    WINDSELECT=WINDMEYERS98
+   
     ! initial call
     if (initcall) then
       open(unit=UENV, file=('./data/' // envfile))
@@ -116,6 +118,7 @@ contains
     tac    = tak - 273.15
     tsc    = ts05k - 273.15
     ubzref = umszref*100.0
+    ustrcms= ustrms*100.0
 
     ! calculate Monin-Obukhov length scale
     rhomolm3 = pmbm/(0.08314*tak)
@@ -145,9 +148,17 @@ contains
        qh(n)        = SpecificHumidity(rhzref, tk(npts), pmb(npts))
 !      qh(n)        = SpecificHumidity(rhzref, tk(n), pmb(n))
 
-       ! Calculate mean wind speed (Meyers et al., 1998)
-       ubar(n)      = CalcMeanWindSpeed(z(n), ubzref)
-
+       select case(WINDSELECT)
+        case(WINDMEYERS98)
+        ! Calculate mean wind speed (Meyers et al., 1998)
+        ubar(n)      = CalcMeanWindSpeedMeyers98(z(n), ubzref)
+        case(WINDMASSMAN17)
+        ! Calculate mean wind speed (Massman et al., 2017)
+        ubar(n)      = CalcMeanWindSpeedMassman17(z(n),fafraczint(n),ubzref)
+        case default !Meyers98
+        ubar(n)      = CalcMeanWindSpeedMeyers98(z(n), ubzref)
+       end select
+       
        ! Kv based on Ra
        kv(n)        = CalcEddyDiffRa(z(n), ubzref, ubar(n), ra(nt))
 
@@ -417,38 +428,98 @@ contains
     return
   end function CalcPressure
 
-!**********************************************************************************************************************!
+  !**********************************************************************************************************************!
 ! CalcMeanWindSpeed ... compute mean wind speed (cm/s) at z
 !
 !**********************************************************************************************************************!
-  function CalcMeanWindSpeed(zk, ubzref)
-    real(kind=dp), intent(in)  :: zk         ! current z (cm)
-    real(kind=dp), intent(in)  :: ubzref     ! mean wind speed at zref (cm/s)
-    real(kind=dp)              :: gamlai     ! coefficient of wind speed attentuation
-                                             !  function of LAI
-    real(kind=dp)              :: blad       ! exponent of wind speed function
-                                             !  function of LAD profile type
-    real(kind=dp)              :: pladtype   ! LAD profile type = 1, 2 or 3
-    real(kind=dp)   :: CalcMeanWindSpeed     ! mean wind speed at current z (cm/s)
+  function CalcMeanWindSpeedMeyers98(zk, ubzref)
+    real(kind=dp), intent(in)  :: zk                 ! current z (cm)
+    real(kind=dp), intent(in)  :: ubzref             ! mean wind speed at zref (cm/s)
+    real(kind=dp)              :: gamlai             ! coefficient of wind speed attentuation
+                                                     !  function of LAI
+    real(kind=dp)              :: blad               ! exponent of wind speed function
+                                                     !  function of LAD profile type
+    real(kind=dp)              :: pladtype           ! LAD profile type = 1, 2 or 3
+    real(kind=dp)   :: CalcMeanWindSpeedMeyers98     ! mean wind speed at current z (cm/s)
     ! Meyers et al. (1998) A multilayer model for inferring dyr deposition using standard meteorological
     !  measurements, JGR, 103, D17, 22645-22661.
 
     pladtype=3  ! appropriate for forest canopy
-    blad = 1.0 - (pladtype-1.0)*0.25 
+    blad = 1.0 - (pladtype-1.0)*0.25
     gamlai = 0.65*laitot
     if (gamlai > 4.0) then
       gamlai = 4.0
     end if
 
     if (zk <= hccm) then
-      CalcMeanWindSpeed=ubzref*exp(-gamlai*((1.0 - (zk/hccm))**blad))
+      CalcMeanWindSpeedMeyers98=ubzref*exp(-gamlai*((1.0 - (zk/hccm))**blad))
     else
-      CalcMeanWindSpeed=ubzref
+      CalcMeanWindSpeedMeyers98=ubzref
     end if
 
-  end function CalcMeanWindSpeed
+  end function CalcMeanWindSpeedMeyers98
 
 !**********************************************************************************************************************!
+! CalcMeanWindSpeed ... compute mean wind speed (cm/s) at z
+!
+!**********************************************************************************************************************!
+  function CalcMeanWindSpeedMassman17(zk,fafrack, ubzref)
+    real(kind=dp), intent(in)  :: zk             ! current z (cm)
+    real(kind=dp), intent(in)  :: fafrack        ! current fractional (z) shape of the plant surface distribution (nondimensional)
+    real(kind=dp), intent(in)  :: ubzref         ! mean wind speed at zref-height of canopy top (cm/s)
+    real(kind=dp), parameter   :: z0ghccm=0.0025 ! ratio of ground roughness length to canopy top height
+                                                 !  (default case: Approx. currently does not account for understory 
+                                                 !   variability) 
+    real(kind=dp), parameter   :: cdrag=0.225    ! Assumed drag coefficient based on average of Table 1 of 
+                                                 !  Massman et al. (2017)
+    real(kind=dp)              :: ustrmod        ! Friction Velocity parameterization -- critical to success of model to close
+                                                 ! equations and ensure consistency in surface stress (cstress) term (cm/s)  
+    real(kind=dp)              :: z0g            ! ground roughness length based on z0g/hccm ratio (cm)
+    real(kind=dp)              :: zkhccm         ! current zk/hccm ratio (nondimensional)
+    real(kind=dp)              :: cstress        ! Ratio synonymous with Reynolds stress at/above canopy height 
+                                                 ! (nondimensional)
+    real(kind=dp)              :: gamlai         ! coefficient of wind speed attentuation (cdrag*laitot)
+                                                 ! function of LAI (nondimensional)
+    real(kind=dp)              :: nrat           ! Ratio of gamlai/cstress (nondimensional)
+    real(kind=dp)              :: canopybottom   ! logarithmic term that is dominant near the ground
+                                                 !  nondimensional
+    real(kind=dp)              :: canopytop      ! hyperbolic cosine term that is
+                                                 ! dominant near the top of canopy
+                                                 ! nondimensional
+    real(kind=dp)   :: CalcMeanWindSpeedMassman17! mean wind speed at current z (cm/s)
+   ! An improved canopy wind model for predicting wind adjustment factors and wildland fire behavior 
+   !(2017)  W.J. Massman, J.M. Forthofer, M.A. Finney.  https://doi.org/10.1139/cjfr-2016-0354
+    zkhccm=zk/hccm
+    z0g = z0ghccm*hccm
+
+   !Nondimensional canopy wind speed term that dominates near the ground:
+    if (zk >= z0g .and. zk <= hccm) then
+    canopybottom = log(zkhccm/z0ghccm)/log(1.0/z0ghccm) 
+    else if (zk >= 0.0 .and. zk <= z0g) then
+    !canopybottom = 0.0  !Remove physical no-slip condition (u=0 at z=0) for ubar functionality in CANACC
+    canopybottom = 1.0E-25
+    end if
+
+    !Nondimensional canopy wind speed term that dominates near the top of the canopy:
+   !Assume the drag area distribution over depth of canopy can be approx. p1=0 (no shelter factor) and d1=0 
+   !(no drag coefficient relation to wind speed) -- no intergration then required in Eq. (4) of Massman et al.  
+   !Assume gamlai of Meyers et al. (1998) assumes form of Cd*PAI in the default (no integration) case of 
+   !Massman et al. (2017), but change to cdrag aprroximated from Table 1 and used in  Massman et al.
+   gamlai = cdrag*laitot
+   ustrmod = ubzref*(0.38 - (0.38 + (0.40/log(z0ghccm)))*exp(-1.0*(15.0*gamlai)))
+   cstress = (2.0*(ustrmod**2.0))/(ubzref**2.0)
+   nrat   =  gamlai/cstress
+    
+   canopytop = cosh(nrat*fafrack)/cosh(nrat)   
+    if (zk <= hccm) then
+      CalcMeanWindSpeedMassman17=ubzref*canopybottom*canopytop
+    else
+      CalcMeanWindSpeedMassman17=ubzref
+    end if
+   
+  end function CalcMeanWindSpeedMassman17
+
+  !**********************************************************************************************************************!
 ! CalcCair ... compute cair at z
 !
 !**********************************************************************************************************************!

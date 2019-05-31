@@ -34,6 +34,15 @@
 # dleaf - characteristic leaf dimension (m)
  0.06  
 #
+# zmaxrho - height of max foliage density (z/h)-hardwoods (Massman et al. (2017)
+ 0.84
+#
+# sigmau - standard deviation of shape function above zmaxrho (z/h) (Massman et al. (2017)
+ 0.13
+#
+# sigma1 - standard deviation of shape function below zmaxrho (z/h) (Massman et al. (2017)
+ 0.30
+#
 #     lad
 #    (cm2/cm3) top-->bottom
  0.000000E+00

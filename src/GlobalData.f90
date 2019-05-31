@@ -7,9 +7,6 @@
 !                                                                                                                      !
 !======================================================================================================================!
 !                                                                                                                      !
-!     Initiated:    Mar 2017                                                                                           !
-!     Last Update:  July 2018                                                                                          !
-!                                                                                                                      !
 !     Contact:      Rick D. Saylor, PhD                                                                                !
 !                   Physical Scientist                                                                                 !
 !                   U. S. Department of Commerce                                                                       !
@@ -85,6 +82,12 @@ module GlobalData
   real(kind=dp)  :: hccm
   ! stretched grid parameter ()
   real(kind=dp)  :: alfa
+  ! height of max foliage density ()
+  real(kind=dp)  :: zmaxrho
+  ! standard deviation of shape function above zmaxrho ()
+  real(kind=dp)  :: sigmau
+  ! standard deviation of shape function below zmaxrho ()
+  real(kind=dp)  :: sigma1
 
   ! roughness length for momentum (cm)
   real(kind=dp)  :: z0m
@@ -106,7 +109,14 @@ module GlobalData
   real(kind=dp), dimension(npts) :: lai
   ! total leaf area index of canopy (cm2 leaf/cm2)
   real(kind=dp)                  :: laitot
-
+  ! incremental shape of the plant surface distribution (nondimensional)
+  real(kind=dp), dimension(npts) :: fainc
+  ! total shape of the plant surface distribution (nondimensional)
+  real(kind=dp)                  :: fatot
+  ! fractional shape of the plant surface distribution faincz/fatot (nondimensional)
+  real(kind=dp),dimension(npts)  :: fafracz
+ ! integral fractional shape of the plant surface distribution faincz/fatot (nondimensional)
+  real(kind=dp),dimension(npts)  :: fafraczint
 
   ! ninteg, number of integrated species
   integer(kind=i4), parameter    :: ninteg=1
@@ -588,7 +598,11 @@ module GlobalData
   integer(kind=i4), parameter :: KVRA=1         ! Aerodynamic resistance parameterization
   integer(kind=i4), parameter :: KVSTULL=2      ! Stull-based
   integer(kind=i4), parameter :: KVULKE=3       ! Ulke-based
-
+  !
+  ! WINDSELECT - Canopy wind parameterization selection
+  integer(kind=i4)            :: WINDSELECT
+  integer(kind=i4), parameter :: WINDMEYERS98=1         ! Meyers et al. (1998)-based
+  integer(kind=i4), parameter :: WINDMASSMAN17=2        ! Massman et al. (2017)-based 
   ! Avogadro's number
   real(kind=dp), parameter :: navo=6.02D+023
 
