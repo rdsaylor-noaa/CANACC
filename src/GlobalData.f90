@@ -82,12 +82,6 @@ module GlobalData
   real(kind=dp)  :: hccm
   ! stretched grid parameter ()
   real(kind=dp)  :: alfa
-  ! height of max foliage density ()
-  real(kind=dp)  :: zmaxrho
-  ! standard deviation of shape function above zmaxrho ()
-  real(kind=dp)  :: sigmau
-  ! standard deviation of shape function below zmaxrho ()
-  real(kind=dp)  :: sigma1
 
   ! roughness length for momentum (cm)
   real(kind=dp)  :: z0m
@@ -109,12 +103,6 @@ module GlobalData
   real(kind=dp), dimension(npts) :: lai
   ! total leaf area index of canopy (cm2 leaf/cm2)
   real(kind=dp)                  :: laitot
-  ! incremental shape of the plant surface distribution (nondimensional)
-  real(kind=dp), dimension(npts) :: fainc
-  ! total shape of the plant surface distribution (nondimensional)
-  real(kind=dp)                  :: fatot
-  ! fractional shape of the plant surface distribution faincz/fatot (nondimensional)
-  real(kind=dp),dimension(npts)  :: fafracz
  ! integral fractional shape of the plant surface distribution faincz/fatot (nondimensional)
   real(kind=dp),dimension(npts)  :: fafraczint
 

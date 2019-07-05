@@ -472,7 +472,6 @@ subroutine GetCanopyData()
   integer(kind=i4), parameter :: nchlines=15
   integer(kind=i4) :: cm_npts
   real(kind=dp)    :: cm_z0, cm_zi, cm_hc, cm_alfa
-  real(kind=dp), dimension(npts)  :: ztothc
 
   open(unit=UCNPY,file=('./data/' // cnpyfile))
   do j=1,nchlines
@@ -540,21 +539,6 @@ subroutine GetCanopyData()
   read(UCNPY,*)   dleaf
   read(UCNPY,*)
   read(UCNPY,*)
-
-  ! zmaxrho, height of max foliage density (z/h)-hardwoods (Massman et al. (2017)
-  read(UCNPY,*)   zmaxrho
-  read(UCNPY,*)
-  read(UCNPY,*)
-
-  ! sigmau, standard deviation of shape function above zmaxrho (z/h)
-  read(UCNPY,*)   sigmau
-  read(UCNPY,*)
-  read(UCNPY,*)
-
-  ! sigma1, standard deviation of shape function above zmaxrho (z/h)
-  read(UCNPY,*)   sigma1
-  read(UCNPY,*)
-  read(UCNPY,*)
   read(UCNPY,*)
 
   ! zero arrays
@@ -571,20 +555,17 @@ subroutine GetCanopyData()
     lai(i)=lad(i)*dzhc          ! within canopy grid resolution is always constant!
     laitot=laitot+lad(i)*dzhc
     clai(i)=laitot
+    print*,lad(i), lai(i)*0.225, clai(i)*0.225, (lai(i)/clai(i)),z(i)
   end do
-  ! calculate canopy/foliage distribution shape profile - bottom up total in-canopy and fraction at z
-  do i=1, npts
-    ztothc(i) = z(i)/hccm 
-     if (ztothc(i) >= zmaxrho .and. ztothc(i) <= 1.0) then
-      fainc(i) = exp((-1.0*((ztothc(i)-zmaxrho)**2.0))/sigmau**2.0) 
-     else if (ztothc(i) >= 0.0 .and. ztothc(i) <= zmaxrho) then
-      fainc(i) = exp((-1.0*((zmaxrho-ztothc(i))**2.0))/sigma1**2.0)
-  end if
-  end do
-   fatot      = IntegrateTrapezoid(ztothc,fainc)  
-   do i=1, npts
-     fafracz(i) = fainc(i)/fatot
-     fafraczInt(i) = IntegrateTrapezoid(ztothc(1:i),fafracz(1:i))
+ 
+  do i= 1, npts
+  ! use measured lai profile to get fractional plant distribution profile
+    if (z(i) < hccm) then
+       fafraczInt(i) = lai(i)/clai(i)
+    else 
+       fafraczInt(i) =1.0
+    end if
+     
   end do
   close(UCNPY)
 
@@ -594,9 +575,6 @@ subroutine GetCanopyData()
 205 format('***Canopy zi = ', e12.4 /'***ACCESS zi = ', e12.4)
 206 format('***Canopy hc = ', e12.4 /'***ACCESS hc = ', e12.4)
 207 format('***Canopy alfa = ', e12.4 /'***ACCESS alfa = ', e12.4)
-208 format('***Canopy zmaxrho = ', e12.4 /'***ACCESS zmaxrho = ', e12.4)
-209 format('***Canopy sigmau = ', e12.4 /'***ACCESS sigmau = ', e12.4)
-210 format('***Canopy sigma1 = ', e12.4 /'***ACCESS sigma1 = ', e12.4)
   return
 
 end subroutine GetCanopyData
