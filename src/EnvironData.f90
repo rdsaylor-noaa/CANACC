@@ -470,7 +470,7 @@ contains
     real(kind=dp), parameter   :: z0ghccm=0.0025 ! ratio of ground roughness length to canopy top height
                                                  !  (default case: Approx. currently does not account for understory 
                                                  !   variability) 
-    real(kind=dp), parameter   :: cdrag=0.225    ! Assumed drag coefficient based on average of Table 1 of 
+    real(kind=dp), parameter   :: cdrag=0.225    ! Assumed drag coefficient,Cd, based on average of Table 1 of 
                                                  !  Massman et al. (2017)
     real(kind=dp)              :: ustrmod        ! Friction Velocity parameterization -- critical to success of model to close
                                                  ! equations and ensure consistency in surface stress (cstress) term (cm/s)  
@@ -500,17 +500,19 @@ contains
     canopybottom = 1.0E-25
     end if
 
-    !Nondimensional canopy wind speed term that dominates near the top of the canopy:
-   !Assume the drag area distribution over depth of canopy can be approx. p1=0 (no shelter factor) and d1=0 
-   !(no drag coefficient relation to wind speed) -- no intergration then required in Eq. (4) of Massman et al.  
-   !Assume gamlai of Meyers et al. (1998) assumes form of Cd*PAI in the default (no integration) case of 
-   !Massman et al. (2017), but change to cdrag aprroximated from Table 1 and used in  Massman et al.
+   !Nondimensional canopy wind speed term that dominates near the top of the canopy:
+   !Assumption:   The drag area distribution over depth of canopy can be approx. p1=0 (no shelter factor) and d1=0 
+   !(no drag coefficient relation to wind speed) -- no intergration then required in Eq. (4) of Massman et al. and simplifies
+   !Eq. (5) by pulling CdPAI outside integral and just initializing fafrack for canopy one time.  
+   !Also allows assumption that gamlai of Meyers et al. (1998) has similar form of Cd*PAI in the default (no integration) case of 
+   !Massman et al. (2017), and change to cdrag, the bulk drag = Cd (drag coefficient) aprroximated constant
+   ! from Table 1 and used in  Massman et al.
    gamlai = cdrag*laitot
    ustrmod = ubzref*(0.38 - (0.38 + (0.40/log(z0ghccm)))*exp(-1.0*(15.0*gamlai)))
    cstress = (2.0*(ustrmod**2.0))/(ubzref**2.0)
    nrat   =  gamlai/cstress
-    
-   canopytop = cosh(nrat*fafrack)/cosh(nrat)   
+   canopytop = cosh(nrat*fafrack)/cosh(nrat)  
+
     if (zk <= hccm) then
       CalcMeanWindSpeedMassman17=ubzref*canopybottom*canopytop
     else
