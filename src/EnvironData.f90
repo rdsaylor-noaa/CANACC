@@ -140,7 +140,6 @@ contains
 
        ! Initial guess for qh based on rhzref and tk
        qh(n)        = SpecificHumidity(rhzref, tk(npts), pmb(npts))
-!      qh(n)        = SpecificHumidity(rhzref, tk(n), pmb(n))
 
        ! Calculate mean wind speed (Meyers et al., 1998)
        ubar(n)      = CalcMeanWindSpeed(z(n), ubzref)
