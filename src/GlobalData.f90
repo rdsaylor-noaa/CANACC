@@ -265,7 +265,7 @@ module GlobalData
   real(kind=dp), allocatable :: cairout(:,:)
   ! h2oout - saved h2o profiles (molecules/cm3)
   real(kind=dp), allocatable :: h2oout(:,:) 
-  
+
   ! timeout - saved t values corresponding to output saved in cout
   real(kind=dp), allocatable :: timeout(:)
   ! sdtout - saved sdatetime values corresponding to output saved in cout
@@ -333,16 +333,24 @@ module GlobalData
   real(kind=dp), dimension(npts) :: gl_sun  
   ! gl_shd - leaf water vapor conductance in shaded fraction (mol/m2-s)
   real(kind=dp), dimension(npts) :: gl_shd
+  ! vl_sun - leaf water vapor exchange velocity in sunlit fraction (cm/s)
+  real(kind=dp), dimension(npts) :: vl_sun  
+  ! vl_shd - leaf water vapor exchange velocity in shaded fraction (cm/s)
+  real(kind=dp), dimension(npts) :: vl_shd
   ! gb - leaf boundary layer conductance (mol/m2-s)
   real(kind=dp), dimension(npts) :: gb
-  ! esun - evapotranspiration flux for the sunlit canopy fraction (mol/m2-s)
+  ! esun - evapotranspiration flux for the sunlit canopy fraction (mol/cm2-s)
   real(kind=dp), dimension(npts) :: esun
-  ! eshd - evapotranspiration flux for the shaded canopy fraction (mol/m2-s)
+  ! eshd - evapotranspiration flux for the shaded canopy fraction (mol/cm2-s)
   real(kind=dp), dimension(npts) :: eshd
-  ! hsun - sensible heat flux for the sunlit canopy fraction (W/m2)
+  ! etot - total evapotranspiration flux for the canopy (mol/cm2-s)
+  real(kind=dp), dimension(npts) :: etot
+  ! hsun - sensible heat flux for the sunlit canopy fraction (W/cm2)
   real(kind=dp), dimension(npts) :: hsun
-  ! hshd - sensible heat flux for the shaded canopy fraction (W/m2)
+  ! hshd - sensible heat flux for the shaded canopy fraction (W/cm2)
   real(kind=dp), dimension(npts) :: hshd
+  ! htot - total sensible heat flux for the canopy (W/cm2)
+  real(kind=dp), dimension(npts) :: htot
 
   ! rs_sun - leaf stomatal resistance in sunlit fraction (s/m)
   real(kind=dp), dimension(npts) :: rs_sun
@@ -443,12 +451,56 @@ module GlobalData
   real(kind=dp), allocatable     :: rsshdout(:,:)
   ! rswgtout - sun/shade weighted leaf stomatal resistance (s/m)
   real(kind=dp), allocatable     :: rswgtout(:,:)
+
+  ! hsunout - sensible heat flux for the sunlit fraction of the canopy (W/cm2)
+  real(kind=dp), allocatable     :: hsunout(:,:)
+  ! hshdout - sensible heat flux for the shaded fraction of the canopy (W/cm2)
+  real(kind=dp), allocatable     :: hshdout(:,:)
+  ! htotout - total sensible heat flux for the canopy (W/cm2)
+  real(kind=dp), allocatable     :: htotout(:,:)
+
+  ! esunout - evapotranspiration flux for the sunlit fraction of the canopy (W/cm2)
+  real(kind=dp), allocatable     :: esunout(:,:)
+  ! eshdout - evapotranspiration flux for the shaded fraction of the canopy (W/cm2)
+  real(kind=dp), allocatable     :: eshdout(:,:)
+  ! etotout - total evapotranspiration flux for the canopy (W/cm2)
+  real(kind=dp), allocatable     :: etotout(:,:)
+
+  ! gbout - leaf boundary layer conductance (mol/m2-s)
+  real(kind=dp), allocatable     :: gbout(:,:)
+
+  ! gl_sunout - leaf water vapor conductance in sunlit fraction (mol/m2-s)
+  real(kind=dp), allocatable     :: gl_sunout(:,:)
+  ! gl_shdout - leaf water vapor conductance in shaded fraction (mol/m2-s)
+  real(kind=dp), allocatable     :: gl_shdout(:,:)
+
+  ! vl_sunout - leaf water vapor exchange velocity in sunlit fraction (cm/s)
+  real(kind=dp), allocatable     :: vl_sunout(:,:)
+  ! vl_shdout - leaf water vapor exchange velocity in shaded fraction (cm/s)
+  real(kind=dp), allocatable     :: vl_shdout(:,:)
+
   ! anetsunout - net photosynthetic assimilation in sunlit fraction (umol/m2-s)
   real(kind=dp), allocatable     :: anetsunout(:,:)
   ! anetshdout - net photosynthetic assimilation in shaded fraction (umol/m2-s)
   real(kind=dp), allocatable     :: anetshdout(:,:)
   ! anetwgtout - sun/shade weighted net photosynthetic assimilation (umol/m2-s)
   real(kind=dp), allocatable     :: anetwgtout(:,:)
+
+  ! Surface Energy Balance components
+  ! rnout - net radiation flux vertical profiles (W/m2)
+  real(kind=dp), allocatable     :: rnout(:,:)
+  ! hout - sensible heat flux vertical profiles (W/m2)
+  real(kind=dp), allocatable     :: hout(:,:)
+  ! leout - latent heat flux vertical profiles (W/m2)
+  real(kind=dp), allocatable     :: leout(:,:)
+  ! gout - ground heat flux (W/m2)
+  real(kind=dp), allocatable     :: gout(:)
+  ! hflux - measured sensible heat flux at current time (W/m2)
+  real(kind=dp)                  :: hflux
+  ! leflux - measured latent heat flux at current time (W/m2)
+  real(kind=dp)                  :: leflux
+  ! gflux - measured ground heat flux (W/m2)
+  real(kind=dp)                  :: gflux
 
   ! Meteorological data
   ! Met data at reference height
@@ -468,6 +520,8 @@ module GlobalData
   real(kind=dp)                  :: ppfdzref
   ! sradzref - solar radiation (W/m2)
   real(kind=dp)                  :: sradzref
+  ! lwdnzref - downwelling longwave radiation (W/m2)
+  real(kind=dp)                  :: lwdnzref
   ! razref - aerodynamic resistance (s/cm)
   real(kind=dp)                  :: razref
   ! eatm - water vapor pressure (kPa)
@@ -585,6 +639,15 @@ module GlobalData
   integer(kind=i4), parameter :: KVRA=1         ! Aerodynamic resistance parameterization
   integer(kind=i4), parameter :: KVSTULL=2      ! Stull-based
   integer(kind=i4), parameter :: KVULKE=3       ! Ulke-based
+
+  ! BCTYPE - Flux or Dirichlet BC at domain top
+  integer(kind=i4)            :: BCTYPE
+  integer(kind=i4), parameter :: BCFLUX=1
+  integer(kind=i4), parameter :: BCCONST=2
+
+  ! Sensitivity simulation factors
+  ! Kv profile sensitivity
+  real(kind=dp)            :: senskv
 
   ! Avogadro's number
   real(kind=dp), parameter :: navo=6.02D+023
