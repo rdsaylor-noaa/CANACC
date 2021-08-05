@@ -161,7 +161,10 @@ contains
     qzref  = h2o(npts)/navo          ! moles/cm3
     tkzref = tak
     tsoilk = ts05k                   ! 5 cm temperature
-    dtdzsoil = (tsoilk-ts55k)/0.5    ! soil temperature gradient (K/m)
+    dtdzsoil = (tsoilk-ts20k)/0.15   ! soil temperature gradient (K/m)
+    gflux = gwm2                     ! ground heat flux (W/m2)
+    hflux = hwm2                     ! sensible heat flux (W/m2)
+    leflux = lewm2                   ! latent heat flux (W/m2)
 
     return
   end subroutine ReadEnvironData
