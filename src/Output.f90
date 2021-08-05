@@ -193,6 +193,17 @@ subroutine SaveResults()
     rssunout(i,nt)   = rs_sun(i)
     rsshdout(i,nt)   = rs_shd(i)
     rswgtout(i,nt)   = rs_wgt(i)
+    hsunout(i,nt)    = hsun(i)
+    hshdout(i,nt)    = hshd(i)
+    htotout(i,nt)    = htot(i)
+    esunout(i,nt)    = esun(i)
+    eshdout(i,nt)    = eshd(i)
+    etotout(i,nt)    = etot(i)
+    gbout(i,nt)      = gb(i)
+    gl_sunout(i,nt)  = gl_sun(i)
+    gl_shdout(i,nt)  = gl_shd(i)
+    vl_sunout(i,nt)  = vl_sun(i)
+    vl_shdout(i,nt)  = vl_shd(i)
     anetsunout(i,nt) = anet_sun(i)
     anetshdout(i,nt) = anet_shd(i)
     anetwgtout(i,nt) = anet_wgt(i)
@@ -225,12 +236,15 @@ end subroutine SaveResults
 !**********************************************************************************************************************!
 subroutine PrintFinaltoFile()
   integer(kind=i4) :: i, l, m, j
+  integer(kind=i4) :: nseb
   character(len=4)  :: ncols
   character(len=30) :: f1, f2, f3, f4, f5, f6
   character(len=4)  :: col1
   character(len=8)  :: srxn
   character(len=45) :: ofname
   character(len=40) :: hdr
+
+  nseb = npts
 
   ! dynamically create format strings for output
   write(ncols,'(i4)') ntout
@@ -611,6 +625,105 @@ subroutine PrintFinaltoFile()
   end do
   close(UOUT)
 
+  ! output hsun profiles over simulation
+  ofname='./out/' // trim(simname) // '/canopy/hsun.dat'
+  open(UOUT,file=ofname)
+  write(UOUT,fmt=f1) col1,(timeout(m),m=0,ntout-1)
+  do i=1,npts
+    write(UOUT,fmt=f2) 0.01*z(i),(hsunout(i,m),m=0,ntout-1)
+  end do
+  close(UOUT)
+
+  ! output hshd profiles over simulation
+  ofname='./out/' // trim(simname) // '/canopy/hshd.dat'
+  open(UOUT,file=ofname)
+  write(UOUT,fmt=f1) col1,(timeout(m),m=0,ntout-1)
+  do i=1,npts
+    write(UOUT,fmt=f2) 0.01*z(i),(hshdout(i,m),m=0,ntout-1)
+  end do
+  close(UOUT)
+
+  ! output htot profiles over simulation
+  ofname='./out/' // trim(simname) // '/canopy/htot.dat'
+  open(UOUT,file=ofname)
+  write(UOUT,fmt=f1) col1,(timeout(m),m=0,ntout-1)
+  do i=1,npts
+    write(UOUT,fmt=f2) 0.01*z(i),(htotout(i,m),m=0,ntout-1)
+  end do
+  close(UOUT)
+
+  ! output esun profiles over simulation
+  ofname='./out/' // trim(simname) // '/canopy/esun.dat'
+  open(UOUT,file=ofname)
+  write(UOUT,fmt=f1) col1,(timeout(m),m=0,ntout-1)
+  do i=1,npts
+    write(UOUT,fmt=f2) 0.01*z(i),(esunout(i,m),m=0,ntout-1)
+  end do
+  close(UOUT)
+
+  ! output eshd profiles over simulation
+  ofname='./out/' // trim(simname) // '/canopy/eshd.dat'
+  open(UOUT,file=ofname)
+  write(UOUT,fmt=f1) col1,(timeout(m),m=0,ntout-1)
+  do i=1,npts
+    write(UOUT,fmt=f2) 0.01*z(i),(eshdout(i,m),m=0,ntout-1)
+  end do
+  close(UOUT)
+
+  ! output etot profiles over simulation
+  ofname='./out/' // trim(simname) // '/canopy/etot.dat'
+  open(UOUT,file=ofname)
+  write(UOUT,fmt=f1) col1,(timeout(m),m=0,ntout-1)
+  do i=1,npts
+    write(UOUT,fmt=f2) 0.01*z(i),(etotout(i,m),m=0,ntout-1)
+  end do
+  close(UOUT)
+
+  ! output gbout profiles over simulation
+  ofname='./out/' // trim(simname) // '/canopy/gb.dat'
+  open(UOUT,file=ofname)
+  write(UOUT,fmt=f1) col1,(timeout(m),m=0,ntout-1)
+  do i=1,npts
+    write(UOUT,fmt=f2) 0.01*z(i),(gbout(i,m),m=0,ntout-1)
+  end do
+  close(UOUT)
+
+  ! output gl_sun profiles over simulation
+  ofname='./out/' // trim(simname) // '/canopy/gl_sun.dat'
+  open(UOUT,file=ofname)
+  write(UOUT,fmt=f1) col1,(timeout(m),m=0,ntout-1)
+  do i=1,npts
+    write(UOUT,fmt=f2) 0.01*z(i),(gl_sunout(i,m),m=0,ntout-1)
+  end do
+  close(UOUT)
+
+  ! output gl_shd profiles over simulation
+  ofname='./out/' // trim(simname) // '/canopy/gl_shd.dat'
+  open(UOUT,file=ofname)
+  write(UOUT,fmt=f1) col1,(timeout(m),m=0,ntout-1)
+  do i=1,npts
+    write(UOUT,fmt=f2) 0.01*z(i),(gl_shdout(i,m),m=0,ntout-1)
+  end do
+  close(UOUT)
+
+  ! output vl_sun profiles over simulation
+  ofname='./out/' // trim(simname) // '/canopy/vl_sun.dat'
+  open(UOUT,file=ofname)
+  write(UOUT,fmt=f1) col1,(timeout(m),m=0,ntout-1)
+  do i=1,npts
+    write(UOUT,fmt=f2) 0.01*z(i),(vl_sunout(i,m),m=0,ntout-1)
+  end do
+  close(UOUT)
+
+  ! output vl_shd profiles over simulation
+  ofname='./out/' // trim(simname) // '/canopy/vl_shd.dat'
+  open(UOUT,file=ofname)
+  write(UOUT,fmt=f1) col1,(timeout(m),m=0,ntout-1)
+  do i=1,npts
+    write(UOUT,fmt=f2) 0.01*z(i),(vl_shdout(i,m),m=0,ntout-1)
+  end do
+  close(UOUT)
+
   ! output gs_wgt profiles over simulation
   ofname='./out/' // trim(simname) // '/canopy/gswgt.dat'
   open(UOUT,file=ofname)
@@ -689,6 +802,73 @@ subroutine PrintFinaltoFile()
   write(UOUT,fmt=f1) col1,(timeout(m),m=0,ntout-1)
   do i=1,npts
     write(UOUT,fmt=f2) 0.01*z(i),(fshdout(i,m),m=0,ntout-1)
+  end do
+  close(UOUT)
+
+  ! output net radiation profiles over simulation
+  ofname='./out/' // trim(simname) // '/seb/rnetprof.dat'
+  open(UOUT,file=ofname)
+  write(UOUT,fmt=f1) col1,(timeout(m),m=0,ntout-1)
+  do i=1,npts
+    write(UOUT,fmt=f2) 0.01*z(i),(rnout(i,m),m=0,ntout-1)
+  end do
+  close(UOUT)
+
+  ! output net radiation at canopy top over simulation
+  ofname='./out/' // trim(simname) // '/seb/rnet.dat'
+  open(UOUT,file=ofname)
+  hdr = ' hr         Rnet(W/m2)'
+  write(UOUT,1000) trim(hdr)
+  do m=0,ntout-1
+    write(UOUT,1001) timeout(m), rnout(nseb,m)
+  end do
+  close(UOUT)
+
+  ! output sensible heat profiles over simulation
+  ofname='./out/' // trim(simname) // '/seb/hprof.dat'
+  open(UOUT,file=ofname)
+  write(UOUT,fmt=f1) col1,(timeout(m),m=0,ntout-1)
+  do i=1,npts
+    write(UOUT,fmt=f2) 0.01*z(i),(hout(i,m),m=0,ntout-1)
+  end do
+  close(UOUT)
+
+  ! output sensible heat flux at canopy top over simulation
+  ofname='./out/' // trim(simname) // '/seb/h.dat'
+  open(UOUT,file=ofname)
+  hdr = ' hr         H(W/m2)'
+  write(UOUT,1000) trim(hdr)
+  do m=0,ntout-1
+    write(UOUT,1001) timeout(m), hout(nseb,m)
+  end do
+  close(UOUT)
+
+  ! output latent heat profiles over simulation
+  ofname='./out/' // trim(simname) // '/seb/leprof.dat'
+  open(UOUT,file=ofname)
+  write(UOUT,fmt=f1) col1,(timeout(m),m=0,ntout-1)
+  do i=1,npts
+    write(UOUT,fmt=f2) 0.01*z(i),(leout(i,m),m=0,ntout-1)
+  end do
+  close(UOUT)
+
+  ! output latent heat flux at canopy top over simulation
+  ofname='./out/' // trim(simname) // '/seb/le.dat'
+  open(UOUT,file=ofname)
+  hdr = ' hr         LE(W/m2)'
+  write(UOUT,1000) trim(hdr)
+  do m=0,ntout-1
+    write(UOUT,1001) timeout(m), leout(nseb,m)
+  end do
+  close(UOUT)
+
+  ! output ground heat flux over simulation
+  ofname='./out/' // trim(simname) // '/seb/g.dat'
+  open(UOUT,file=ofname)
+  hdr = ' hr         G(W/m2)'
+  write(UOUT,1000) trim(hdr)
+  do m=0,ntout-1
+    write(UOUT,1001) timeout(m), gout(m)
   end do
   close(UOUT)
 
