@@ -649,6 +649,11 @@ module GlobalData
   integer(kind=i4), parameter :: BCFLUX=1
   integer(kind=i4), parameter :: BCCONST=2
 
+  ! SKYLW - how to determine downwelling longwave radiation
+  integer(kind=i4)            :: SKYLW
+  integer(kind=i4), parameter :: MEASURED=1
+  integer(kind=i4), parameter :: ESTIMATED=2
+
   ! Sensitivity simulation factors
   ! Kv profile sensitivity
   real(kind=dp)            :: senskv
