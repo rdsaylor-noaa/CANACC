@@ -314,6 +314,12 @@ subroutine SetSimulationData()
   read(UCTRL,*) INTGWVAP
   read(UCTRL,*) INTGTAIR
   read(UCTRL,*)
+  read(UCTRL,*) BCTYPE
+  read(UCTRL,*)
+  read(UCTRL,*) senskv
+  read(UCTRL,*)
+  read(UCTRL,*) kvzref
+  read(UCTRL,*)
   read(UCTRL,*) grdfile
   read(UCTRL,*)
   read(UCTRL,*) envfile
@@ -348,6 +354,10 @@ subroutine SetSimulationData()
   write(6,2200) 
   write(6,2172) INTGWVAP
   write(6,2173) INTGTAIR
+  write(6,2180) BCTYPE
+  write(6,2205)
+  write(6,2206) senskv
+  write(6,2207) kvzref
   write(6,2210) 
   write(6,2179) grdfile
   write(6,2190) envfile
@@ -412,6 +422,10 @@ subroutine SetSimulationData()
   write(USUMM,2200) 
   write(USUMM,2172) INTGWVAP
   write(USUMM,2173) INTGTAIR
+  write(USUMM,2180) BCTYPE
+  write(USUMM,2205) 
+  write(USUMM,2206) senskv
+  write(USUMM,2207) kvzref
   write(USUMM,2210) 
   write(USUMM,2179) grdfile
   write(USUMM,2190) envfile
@@ -438,7 +452,11 @@ subroutine SetSimulationData()
 2173 format(' INTGTAIR       = ', l2)
 2179 format(' GRD file name  = ', a)
 2190 format(' ENV file name  = ', a)
+2180 format(/'BCTYPE         = ', i2)
 2200 format(/' Model Options:')
+2205 format(/' Eddy Diffusivity Params:')
+2206 format(' Kv factor      = ', f7.2)
+2207 format(' Kv @ z=H       = ', f8.1)
 2210 format(/' Input Files:')
 2300 format(' CNPY file name  = ', a)
 2304 format(' SOIL  file name = ', a)
