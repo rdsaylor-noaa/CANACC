@@ -35,7 +35,7 @@ module EnvironData
   public ReadEnvironData, AeroConductanceHeat, AeroConductanceMomen, AeroConductanceWater
 
   private CalcTemp, CalcPressure, CalcMeanWindSpeed, CalcCair, CalcEddyDiffRa, CalcEddyDiffStull, &
-          Psi_m, Psi_h, Psi_w, CalcRiB, rav, MapRiBtoZoL, Phi
+          CalcEddyDiffCoweeta, Psi_m, Psi_h, Psi_w, CalcRiB, rav, MapRiBtoZoL, Phi
 
 contains
 
@@ -45,7 +45,7 @@ contains
 !**********************************************************************************************************************!
   subroutine ReadEnvironData()
     integer(kind=i4)          :: j, n
-    integer(kind=i4), parameter :: nmhlines=17
+    integer(kind=i4), parameter :: nmhlines=18
     character(len=19)         :: sdt      ! time slice datetime as a string
     character(len=10)         :: sdate    ! time slice date as a string
     character(len=8)          :: stime    ! time slice time as a string
@@ -54,13 +54,14 @@ contains
     real(kind=dp)             :: tsc      ! surface temperature (C)
     real(kind=dp)             :: tak      ! air temperature at zref (K)
     real(kind=dp)             :: ts05k    ! soil temperature at 5 cm depth (K)
-    real(kind=dp)             :: ts55k    ! soil temperature at 55 cm depth (K)
+    real(kind=dp)             :: ts20k    ! soil temperature at 20 cm depth (K)
     real(kind=dp)             :: takm     ! air temperature at measurement height (K)
     real(kind=dp)             :: pmbm     ! air pressure at measurement height (mb)
     real(kind=dp)             :: umsm     ! wind speed at measurement height (m/s)
     real(kind=dp)             :: rhm      ! relative humidity at measurement height (%)
     real(kind=dp)             :: ppfdm    ! PPFD at measurement height (umol/m2-s)
     real(kind=dp)             :: sradm    ! shortwave solar radiation at measurement height (W/m2)
+    real(kind=dp)             :: lwdnm    ! downwelling longwave radiation at measurement height (W/m2)
     real(kind=dp)             :: ustrms   ! friction velocity (m/s)
     real(kind=dp)             :: lewm2    ! latent heat flux (W/m2)
     real(kind=dp)             :: hwm2     ! sensible heat flux (W/m2)
@@ -88,8 +89,8 @@ contains
     end if
 
     ! read environmental data for the next time slice
-    read(UENV,*) sdate, stime, xappbv, takm, ts05k, ts55k, pmbm, umsm, rhm, ppfdm, sradm, &
-                  ustrms, lewm2, hwm2, gwm2, stheta
+    read(UENV,*) sdate, stime, xappbv, takm, ts05k, ts20k, pmbm, umsm, rhm, ustrms, ppfdm, sradm, &
+                  lwdnm, lewm2, hwm2, gwm2, stheta
 
     sdt = sdate // ' ' // stime
     time21 = DateTime2SimTime(sdate, stime)
@@ -106,6 +107,7 @@ contains
     rhzref   = rhm                ! assume no height adjustment necessary
     ppfdzref = ppfdm              ! assume no height adjustment necessary
     sradzref = sradm              ! assume no height adjustment necessary
+    lwdnzref = lwdnm              ! assume no height adjustment necessary
 
     ! calculate water vapor pressure above the canopy, kPa
     eatm = esat(tak)*rhm/100.
