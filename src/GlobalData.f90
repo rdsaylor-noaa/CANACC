@@ -524,6 +524,9 @@ module GlobalData
   real(kind=dp)                  :: lwdnzref
   ! razref - aerodynamic resistance (s/cm)
   real(kind=dp)                  :: razref
+  ! kvzref - measured Kv at z=H (cm2/s)
+  real(kind=dp)                  :: kvzref
+
   ! eatm - water vapor pressure (kPa)
   real(kind=dp)                  :: eatm
   ! tk - vertical profile of temperature at current simulation time (K)
@@ -639,6 +642,7 @@ module GlobalData
   integer(kind=i4), parameter :: KVRA=1         ! Aerodynamic resistance parameterization
   integer(kind=i4), parameter :: KVSTULL=2      ! Stull-based
   integer(kind=i4), parameter :: KVULKE=3       ! Ulke-based
+  integer(kind=i4), parameter :: KVCOWEETA=4    ! Based on measured EC data at Coweeta
 
   ! BCTYPE - Flux or Dirichlet BC at domain top
   integer(kind=i4)            :: BCTYPE
