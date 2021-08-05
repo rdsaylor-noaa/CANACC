@@ -144,6 +144,11 @@ subroutine InitializeModel()
   allocate(anetshdout(npts,0:ntout-1))
   allocate(anetwgtout(npts,0:ntout-1))
 
+  allocate(rnout(npts,0:ntout-1))
+  allocate(hout(npts,0:ntout-1))
+  allocate(leout(npts,0:ntout-1))
+  allocate(gout(0:ntout-1))
+
   allocate(vsh2oout(0:ntout-1))
   allocate(qsoilout(0:ntout-1))
   allocate(effrhsoilout(0:ntout-1))
@@ -190,6 +195,11 @@ subroutine InitializeModel()
   rsshdout=0.0_dp
   anetsunout=0.0_dp
   anetshdout=0.0_dp
+
+  rnout=0.0_dp
+  hout=0.0_dp
+  leout=0.0_dp
+  gout=0.0_dp
 
   vsh2oout=0.0_dp
   qsoilout=0.0_dp
