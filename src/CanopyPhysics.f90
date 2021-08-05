@@ -59,7 +59,8 @@ contains
 subroutine CalcCanopyPhysics()
   integer(kind=i4)            :: i
   integer(kind=i4)            :: iter
-  integer(kind=i4), parameter :: maxiter=20
+  integer(kind=i4), parameter :: maxiter=200
+  real(kind=dp), parameter    :: canopy_alb=0.132
 
   ! Calculate ksoil, qsoil, vsh2o
   call CalcSoilExchangeParams()
@@ -88,8 +89,21 @@ subroutine CalcCanopyPhysics()
     end if
 
     if (CanopyPhysConverged()) then
-!     print *, 'CalcCanopyPhysics: iter = ', iter
-      return
+       ! Calculate energy fluxes
+       do i=1,npts-1
+         rnout(i,nt) = sradzref*(1.0-canopy_alb) + (lw_dn(i) - lw_up(i))   ! W/m2
+         leout(i,nt) = lambda(tk(i))*(h2o(i)-h2o(i+1))*(0.5*(kv(i)+kv(i+1)))*1.0D+04/(navo*(z(i+1)-z(i)))  ! W/m2
+         hout(i,nt)  = (0.5*(cair(i+1)+cair(i)))*(cpair*(0.5*(kv(i)+kv(i+1)))*  &                            ! W/m2
+                          ((tk(i)-tk(i+1))*1.0D+04)/(navo*(z(i+1)-z(i))))
+       end do
+       rnout(npts,nt) = sradzref*(1.0-canopy_alb) + (lw_dn(npts) - lw_up(npts))    ! W/m2
+       leout(npts,nt) = (lambda(tk(npts))*(h2o(npts-1)-h2o(npts))*(0.5*(kv(npts-1)+kv(npts)))*1.0D+04)  &
+                                /(navo*(z(npts)-z(npts-1)))  ! W/m2
+       hout(npts,nt)  = (0.5*(cair(npts)+cair(npts-1)))*cpair*(0.5*(kv(npts-1)+kv(npts)))*  &
+                            (tk(npts-1)-tk(npts))*1.0D+04/(navo*(z(npts)-z(npts-1)))
+       gout(nt)    = gflux   ! W/m2 
+
+       return
     end if
 
   end do
@@ -125,6 +139,12 @@ subroutine CalcLeafEnergyBal()
 
   end do
 
+
+  do i=npts,ncnpy+1,-1
+    tl_sun(i) = tk(i)
+    tl_shd(i) = tk(i)
+  end do
+
   return
 
 end subroutine CalcLeafEnergyBal
@@ -137,17 +157,16 @@ subroutine IntegrateWaterVapor(tin, tout)
   real(kind=dp), intent(in) :: tin, tout
   real(kind=dp)             :: ts         ! current integration time [tin, tout]                  
   real(kind=dp)             :: dtphys     ! integration time step (secs)
+  real(kind=dp)             :: vflux      ! water vapor flux at domain top (  )
   integer(kind=i4)     :: i
   real(kind=dp), dimension(npts) :: q       ! local water vapor concentration, moles/cm3
   real(kind=dp), dimension(npts) :: kvm     ! Kv (cm2/s)
   real(kind=dp), dimension(npts) :: rho     ! air density (moles/cm3)
   real(kind=dp), dimension(npts) :: phiq    ! new solution array
   real(kind=dp), dimension(npts) :: phiqp   ! previous solution array
-  real(kind=dp), dimension(npts) :: vl_sun  ! gl_sun in units of cm/s
-  real(kind=dp), dimension(npts) :: vl_shd  ! gl_shd in units of cm/s
 
   ts = tin
-  dtphys = 5.0_dp
+  dtphys = 1.0_dp
 
   ! initialize q with water vapor concentration from last full time step
   do i=1,npts
@@ -163,7 +182,8 @@ subroutine IntegrateWaterVapor(tin, tout)
       vl_shd(i) = 0.08314*gl_shd(i)*tl_shd(i)*100./pmb(i)
       esun(i) = vl_sun(i)*(qsat(tl_sun(i)) - q(i))
       eshd(i) = vl_shd(i)*(qsat(tl_shd(i)) - q(i))
-      q(i) = q(i) + dtphys*(esun(i)*fsun(i) + eshd(i)*(1.0-fsun(i)))*lad(i)
+      etot(i) = esun(i)*fsun(i) + eshd(i)*(1.0-fsun(i))
+      q(i) = q(i) + dtphys*etot(i)*lad(i)
     end do  
 
     ! Integrate vert transport
@@ -174,7 +194,14 @@ subroutine IntegrateWaterVapor(tin, tout)
       rho(i) = cair(i)/navo     ! convert from molec/cm3 to moles/cm3
     end do
 
-    call SubIntegrateVertTransportSplitBC(phiq, phiqp, kvm, qzref, qsoil, vsh2o, rho, dtphys)
+    ! Flux BC based on measured latent heat flux or Constant BC based on measured humidity
+    select case(BCTYPE)
+      case(BCFLUX)
+        vflux = leflux*1.0e-4/(kvm(npts)*lambda(tk(npts)))   ! W/m2 -> mol h2o/cm3/cm
+        call SubIntegScalarFluxBC(phiq, phiqp, kvm, qsoil, vsh2o, vflux, rho, dtphys)
+      case(BCCONST)
+        call SubIntegScalarMixedBCa(phiq, phiqp, kvm, qzref, qsoil, vsh2o, rho, dtphys)
+    end select
 
     do i=1,npts
       q(i) = phiq(i)
@@ -206,6 +233,8 @@ subroutine IntegrateTempAir(tin, tout)
   real(kind=dp)             :: ts         ! current integration time [tin, tout]                  
   real(kind=dp)             :: dtphys     ! integration time step (sec)
   real(kind=dp)             :: rcp        ! rho*cpair (moles/m3)*(J/mole-K)
+  real(kind=dp)             :: vflux      ! heat flux at domain top (K/m)
+  real(kind=dp)             :: rhozref    ! molar air density at domain top from measured Tair and Pair (moles/cm3)
   real(kind=dp), dimension(npts) :: phitk    ! new solution array
   real(kind=dp), dimension(npts) :: phitkp   ! previous solution array
   real(kind=dp), dimension(npts) :: kvm      ! Kv (m2/s)
@@ -216,6 +245,7 @@ subroutine IntegrateTempAir(tin, tout)
   dtphys = 1.0_dp
 
   tk0 = SurfaceAirTemp()     ! lower boundary condition for Tair derived from surface energy balance (K)
+  rhozref = pmbzref*7.2428D+18/(tkzref*navo)
 
   ! integration over tin -> tout
   do
@@ -226,7 +256,8 @@ subroutine IntegrateTempAir(tin, tout)
       rcp = rho(i)*cpair
       hsun(i) = 2.0*cpair*gb(i)*1.0E-04*(tl_sun(i) - tk(i))  ! convert gb from mol/m2-s to mol/cm2-s
       hshd(i) = 2.0*cpair*gb(i)*1.0E-04*(tl_shd(i) - tk(i))  ! convert gb from mol/m2-s to mol/cm2-s
-      tk(i) = tk(i) + dtphys*(hsun(i)*fsun(i) + hshd(i)*(1.0-fsun(i)))*lad(i)/rcp
+      htot(i) = hsun(i)*fsun(i) + hshd(i)*(1.0-fsun(i))
+      tk(i) = tk(i) + dtphys*htot(i)*lad(i)/rcp
     end do  
 
     ! Integrate vert transport
@@ -236,7 +267,14 @@ subroutine IntegrateTempAir(tin, tout)
       kvm(i) = kv(i)
     end do
 
-    call SubIntegrateVertTransportConstBC(phitk, phitkp, kvm, tkzref, tk0, rho, dtphys)
+    ! Flux BC based on measured sensible heat flux or Constant BC based on measure temperature
+    select case(BCTYPE)
+      case(BCFLUX)
+        vflux = hflux*1.0e-4/(rhozref*cpair*kvm(npts))  ! W/m2 -> K/cm
+        call SubIntegTempMixedBCb(phitk, phitkp, kvm, vflux, tk0, dtphys)
+      case(BCCONST)
+        call SubIntegTempConstBC(phitk, phitkp, kvm, tkzref, tk0, dtphys)
+    end select
 
     do i=1,npts
       tk(i) = phitk(i)
@@ -423,6 +461,7 @@ function SurfaceAirTemp()
   real(kind=dp)            :: le                ! latent heat flux at the surface (W/m2)
   real(kind=dp)            :: g                 ! ground heat flux (W/m2)
   real(kind=dp)            :: delt              ! temperature difference from measured soil temperature (K)
+  real(kind=dp), parameter :: maxdelt=5.0       ! max difference allowed (K)
   real(kind=dp), parameter :: rhovis=0.15
   real(kind=dp), parameter :: rhonir=0.25
 
@@ -436,11 +475,12 @@ function SurfaceAirTemp()
   le = lambda(tsoilk)*(qsoil-q0)*vsh2o*1.0E+04   ! convert from W/cm2 to W/m2
 
   ! ground heat flux 
-  g  = ksoil*dtdzsoil 
+! g  = ksoil*dtdzsoil 
+  g  = gflux           ! Use measured heat flux
 
   ! temperature difference between soil and air based on surface energy balance, Rn = H + LE + G
   ! where H is the sensible heat flux, H = cpair*gbg*(Tsoil-Tair)
-  delt = (rn - le - g)/(cpair*gbg)
+  delt = min((rn - le - g)/(cpair*gbg), maxdelt)
 
   SurfaceAirTemp = tsoilk - delt
 
@@ -1018,16 +1058,23 @@ subroutine CalcRadProfiles()
   ! canopy extinction coefficient for ellipitical leaf angle distribution
   kbexza = kbe(x, zarad)
 
-  ! effective downwelling sky thermal radiation  
-  w = 4.65*eatm/tk(npts)
-  epssky = 1.0 - (1 + w)*dexp(-(1.2 + 3.*w)**0.5)
-  s = (((ppfd_direct+ppfd_diffus)/4.6) + nir_direct + nir_diffus)/1000.0
-  epssky = (1.0-s) + s*epssky
-  sky_ir = epssky*sbsig*tk(npts)**4.0
+  ! determine downwelling sky longwave radiation
+  SKYLW = MEASURED
+  if (SKYLW == ESTIMATED) then
+    ! effective downwelling sky thermal radiation  
+    w = 4.65*eatm/tk(npts)
+    epssky = 1.0 - (1 + w)*dexp(-(1.2 + 3.*w)**0.5)
+    s = (((ppfd_direct+ppfd_diffus)/4.6) + nir_direct + nir_diffus)/1000.0
+    epssky = (1.0-s) + s*epssky
+  else
+    ! directly from measured downwelling LW radiation
+    epssky = lwdnzref/(sbsig*tkzref**4.0)
+  end if
+
+  sky_ir = epssky*sbsig*tkzref**4.0
 
   ! longwave upwelling radiation
   grnd_ir = epsgrnd*sbsig*tsoilk**4.0
-! grnd_ir = epsgrnd*sbsig*tk(1)**4.0
   lw_up(1) = grnd_ir
   do i=2,npts
     if (lai(i) > 0.0) then
