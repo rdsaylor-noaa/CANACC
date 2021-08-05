@@ -75,6 +75,7 @@ contains
     data initcall /.TRUE./
     save initcall
 
+    KVSELECT=KVCOWEETA
     
     ! initial call
     if (initcall) then
@@ -144,11 +145,19 @@ contains
        ! Calculate mean wind speed (Meyers et al., 1998)
        ubar(n)      = CalcMeanWindSpeed(z(n), ubzref)
 
-       ! Kv based on Ra
-       kv(n)        = CalcEddyDiffRa(z(n), ubzref, ubar(n), ra(nt))
-
-       ! Kv from Stull (1998)
-!      kv(n)        = CalcEddyDiffStull(z(n), ubar(n), zol)
+       select case(KVSELECT)
+         case(KVRA)
+           ! Kv based on Ra
+           kv(n)        = senskv*CalcEddyDiffRa(z(n), ubzref, ubar(n), ra(nt))
+         case(KVSTULL)
+           ! Kv from Stull (1998)
+           kv(n)        = senskv*CalcEddyDiffStull(z(n), ubar(n), zol)
+         case(KVCOWEETA)
+           ! Kv for Coweeta data
+           kv(n)        = CalcEddyDiffCoweeta(z(n), ubar(n), ubzref, kvzref)
+         case default
+           kv(n)        = senskv*CalcEddyDiffRa(z(n), ubzref, ubar(n), ra(nt))
+       end select
 
        ! Calculate air density based on pmb and tk
        ! (updated as tk is updated during integration)
@@ -459,6 +468,36 @@ contains
     CalcCair  = pmbi*7.2428D+18/tki
     return
   end function CalcCair
+
+!*************************************************************************************!
+! CalcEddyDiffCoweeta ... compute a Kv value at current z using Coweeta algorithm
+!
+!   Formulation based on ...
+!     Canopy Kv: Raupach, M. R. (1989) A practical Lagrangian method for relating
+!                 scalar concentrations to source distributions in vegetation
+!                 canopies, Q. J. R. Meteorol. Soc., 115, 609-632.
+!     Above canopy:  Linear function from canopy top to specified Kv at z=H
+!
+!*************************************************************************************!
+  function CalcEddyDiffCoweeta(zk, ubari, ubarhc, kvzh)
+    real(kind=dp), intent(in)  :: zk        ! current z (cm)
+    real(kind=dp), intent(in)  :: ubari     ! mean wind speed at current z (cm/s)
+    real(kind=dp), intent(in)  :: ubarhc    ! mean wind speed at canopy top (cm/s)
+    real(kind=dp), intent(in)  :: kvzh      ! Kv specified at z=H (cm2/s)
+    real(kind=dp)              :: kvhc      ! Kv at z=hccm (cm2/s)
+    real(kind=dp)              :: mkv       ! linear slope of Kv above canopy (cm2/s/cm)
+    real(kind=dp)              :: CalcEddyDiffCoweeta  ! Kv at current z (cm2/s) 
+
+    if (zk <= hccm) then
+      CalcEddyDiffCoweeta = senskv*0.06643*ubari*hccm
+    else
+      kvhc = senskv*0.06643*ubarhc*hccm
+      mkv = (kvzh-kvhc)/(zi-hccm)
+      CalcEddyDiffCoweeta = kvhc + mkv*(zk - hccm)
+    end if
+
+    return
+  end function CalcEddyDiffCoweeta
 
 !**********************************************************************************************************************!
 ! CalcEddyDiffRa ... compute a Kv value at current z using calculated Ra value
