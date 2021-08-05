@@ -140,6 +140,17 @@ subroutine InitializeModel()
   allocate(rssunout(npts,0:ntout-1))
   allocate(rsshdout(npts,0:ntout-1))
   allocate(rswgtout(npts,0:ntout-1))
+  allocate(hsunout(npts,0:ntout-1))
+  allocate(hshdout(npts,0:ntout-1))
+  allocate(htotout(npts,0:ntout-1))
+  allocate(esunout(npts,0:ntout-1))
+  allocate(eshdout(npts,0:ntout-1))
+  allocate(etotout(npts,0:ntout-1))
+  allocate(gbout(npts,0:ntout-1))
+  allocate(gl_sunout(npts,0:ntout-1))
+  allocate(gl_shdout(npts,0:ntout-1))
+  allocate(vl_sunout(npts,0:ntout-1))
+  allocate(vl_shdout(npts,0:ntout-1))
   allocate(anetsunout(npts,0:ntout-1))
   allocate(anetshdout(npts,0:ntout-1))
   allocate(anetwgtout(npts,0:ntout-1))
@@ -358,6 +369,8 @@ subroutine SetSimulationData()
     strmkdir = 'mkdir ./out/' // trim(simname) // '/canopy'
     call system(strmkdir)
     strmkdir = 'mkdir ./out/' // trim(simname) // '/soil'
+    call system(strmkdir)
+    strmkdir = 'mkdir ./out/' // trim(simname) // '/seb'
     call system(strmkdir)
   end if
 
