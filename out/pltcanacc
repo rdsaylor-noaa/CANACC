@@ -6,7 +6,7 @@
 #                                                                                          !
 import os
 import wx
-from libaccess import metvar, canopy, pall1t, tseries
+from libaccess import metvar, genvar, canopy, pall1t, tseries
 
 # gets a list of the directories in "folder"
 # this is used to get the list of simulation experiments, so an assumption is that
@@ -581,6 +581,121 @@ class PltTSlice(wx.Panel):
     def OnClickExit(self,event):
         frame.Destroy()
 
+# class definition for surface energy balance plots
+class PltSEB(wx.Panel):
+
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+
+        font = wx.Font(16, wx.DEFAULT, wx.NORMAL, wx.BOLD, False, "LucidaGrande")
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        # title text
+        hbox0 = wx.BoxSizer(wx.HORIZONTAL)
+        lbltitle = wx.StaticText(self, label="Surface Energy Balance")
+        lbltitle.SetFont(font)
+        hbox0.Add(lbltitle,flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER)
+        vbox.Add(hbox0,flag=wx.EXPAND|wx.LEFT|wx.RIGHT, border=10)
+
+        vbox.Add((-1,10))
+
+        font.SetPointSize(14)
+
+        # sim value
+        hbox1 = wx.BoxSizer(wx.VERTICAL)
+        lblsim = wx.StaticText(self, size=(100,20), label="Simulation")
+        lblsim.SetFont(font)
+        hbox1.Add(lblsim,flag=wx.ALIGN_LEFT)
+        self.simList = listdirs(os.getcwd())
+        obsindex = self.simList.index("obs")
+        del self.simList[obsindex]
+        imgindex = self.simList.index("img")
+        del self.simList[imgindex]
+        self.chxsim = wx.Choice(self, -1, choices=self.simList)
+        hbox1.Add(self.chxsim, proportion=1)
+        vbox.Add(hbox1,flag=wx.LEFT|wx.RIGHT|wx.TOP, border=10)
+
+        vbox.Add((-1,20))
+
+        # enter soil variable to plot
+        hbox2 = wx.BoxSizer(wx.HORIZONTAL)
+        lbltype = wx.StaticText(self, size=(100,20), label="Variable")
+        lbltype.SetFont(font)
+        hbox2.Add(lbltype,flag=wx.ALIGN_LEFT)
+        vbox.Add(hbox2,flag=wx.EXPAND|wx.LEFT|wx.RIGHT, border=10)
+
+        hbox3 = wx.BoxSizer(wx.VERTICAL)
+        self.rbxtype1 = wx.RadioButton(self, -1, 'SEB', style=wx.RB_GROUP)
+        self.rbxtype2 = wx.RadioButton(self, -1, 'Profiles')
+        hbox3.Add(self.rbxtype1, proportion=1)
+        hbox3.Add(self.rbxtype2, proportion=1)
+        vbox.Add(hbox3,flag=wx.EXPAND|wx.LEFT|wx.RIGHT, border=10)
+        self.rbxtype1.SetValue(True)
+
+        vbox.Add((-1,20))
+
+        # enter output type value
+        hbox6 = wx.BoxSizer(wx.VERTICAL)
+        lblout = wx.StaticText(self, size=(100,20), label="Output")
+        lblout.SetFont(font)
+        hbox6.Add(lblout,flag=wx.ALIGN_LEFT)
+        self.rbxout1 = wx.RadioButton(self, -1, 'x11', style=wx.RB_GROUP)
+        self.rbxout2 = wx.RadioButton(self, -1, 'pdf')
+        self.rbxout3 = wx.RadioButton(self, -1, 'png')
+        hbox6.Add(self.rbxout1, proportion=1)
+        hbox6.Add(self.rbxout2, proportion=1)
+        hbox6.Add(self.rbxout3, proportion=1)
+        vbox.Add(hbox6,flag=wx.EXPAND|wx.LEFT|wx.RIGHT, border=10)
+        self.rbxout1.SetValue(True)
+
+        vbox.Add((-1,20))
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+
+        # Plot button
+        pltButton = wx.Button(self, label="Plot", size=(70,30))
+        hbox.Add(pltButton)
+        self.Bind(wx.EVT_BUTTON, self.OnClickPlot, pltButton)
+      
+        # Exit button
+        exitButton = wx.Button(self, label="Exit", size=(70,30))
+        hbox.Add(exitButton,flag=wx.LEFT|wx.BOTTOM, border=5)
+        self.Bind(wx.EVT_BUTTON, self.OnClickExit, exitButton)
+
+        vbox.Add(hbox, flag=wx.ALIGN_LEFT|wx.LEFT, border=10)
+
+        self.SetSizer(vbox)
+
+    def OnClickPlot(self,event):
+        simname = self.chxsim.GetStringSelection()
+        if (self.rbxout1.GetValue() == True):
+           outtype = 'x11'
+        elif (self.rbxout2.GetValue() == True):
+           outtype = 'pdf'
+        elif (self.rxbout3.GetValue() == True):
+           outtype = 'png'
+
+        hmax, hc = getGridInfo(simname)
+
+        if (self.rbxtype1.GetValue() == True):
+           varnames = ["rnet", "h", "le", "g"]
+           varlabels = ["R$_{net}$", "H", "LE", "G"]
+           scolors = ["orange", "darkgreen", "royalblue", "peru"]
+           outfn = "seb"
+           tseries.plottsm(simname, "seb", varnames, varlabels, "W m$^{-2}$", 
+               "Surface Energy Balance", "line", scolors, outtype, outfn)
+        elif (self.rbxtype2.GetValue() == True):
+           inthr = 6
+           dirnames = ["seb", "seb", "seb"]
+           varnames = ["rnetprof", "hprof", "leprof"]
+           varunits = ["W m$^{-2}$", "W m$^{-2}$", "W m$^{-2}$"]
+           vartitles = ["R$_{net}$", "H", "LE"]
+           outfn = "sebprofs"
+           genvar.plotprofs3(simname, dirnames, varnames, varunits, vartitles, outtype, outfn, inthr, hc)
+
+    def OnClickExit(self,event):
+        frame.Destroy()
 
 # main
 if __name__ == "__main__":
@@ -595,6 +710,7 @@ if __name__ == "__main__":
     nb.AddPage(PltMet(nb), "MetProfs")
     nb.AddPage(PltSoil(nb), "Soil")
     nb.AddPage(PltTSlice(nb), "TimeSlice")
+    nb.AddPage(PltSEB(nb), "SEB")
 
     frame.Centre()
     frame.Show(True)
