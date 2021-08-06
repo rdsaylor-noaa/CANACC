@@ -3,7 +3,8 @@
 !     Program:      CANACC                                                                                             !
 !                   Canopy physics model for ACCESS                                                                    !
 !                                                                                                                      !
-!     Version:      2.0.0                                                                                              !
+!     Version:      3.0.0                                                                                              !
+!                   SEB; Flux upper BCs; Coweeta Kv; Measured LWdn_sky; Enhanced diagnostics                           !
 !                                                                                                                      !
 !     Contact:      Rick D. Saylor, PhD                                                                                !
 !                   Physical Scientist                                                                                 !

@@ -5,6 +5,7 @@
 !                   Full BVOC chemistry version                                                                        !
 !                                                                                                                      !
 !     Version:      3.0.0                                                                                              !
+!                   SEB; Flux upper BCs; Coweeta Kv; Measured LWdn_sky; Enhanced diagnostics                           !
 !                                                                                                                      !
 !======================================================================================================================!
 !                                                                                                                      !
