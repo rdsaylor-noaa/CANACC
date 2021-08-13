@@ -2,10 +2,8 @@
 !                                                                                                                      !
 !     Program:      ACCESS                                                                                             !
 !                   Atmospheric Chemistry and Canopy Exchange Simulation System                                        !
-!                   Full BVOC chemistry version                                                                        !
 !                                                                                                                      !
-!     Version:      3.0.0                                                                                              !
-!                   SEB; Flux upper BCs; Coweeta Kv; Measured LWdn_sky; Enhanced diagnostics                           !
+!     Version:      3.1.0                                                                                              !
 !                                                                                                                      !
 !======================================================================================================================!
 !                                                                                                                      !
