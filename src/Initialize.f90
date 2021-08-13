@@ -205,6 +205,17 @@ subroutine InitializeModel()
   gsshdout=0.0_dp
   rssunout=0.0_dp
   rsshdout=0.0_dp
+  hsunout=0.0_dp
+  hshdout=0.0_dp
+  htotout=0.0_dp
+  esunout=0.0_dp
+  eshdout=0.0_dp
+  etotout=0.0_dp
+  gbout=0.0_dp
+  gl_sunout=0.0_dp
+  gl_shdout=0.0_dp
+  vl_sunout=0.0_dp
+  vl_shdout=0.0_dp
   anetsunout=0.0_dp
   anetshdout=0.0_dp
 
