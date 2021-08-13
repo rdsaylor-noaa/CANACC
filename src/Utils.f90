@@ -132,6 +132,7 @@ subroutine CleanUp()
   deallocate(eshdout)
   deallocate(etotout)
   deallocate(gbout)
+
   deallocate(gl_sunout)
   deallocate(gl_shdout)
   deallocate(vl_sunout)
